@@ -1,0 +1,45 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python: Current File",
+            "type": "python",
+            "request": "launch",
+            "program": "${file}",
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "Dashboard cloning",
+            "type": "python",
+            "request": "launch",
+            "module": "scripts.clone_dashboard",
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal"
+        },
+                {
+            "name": "Dashboard organisation unit edit",
+            "type": "python",
+            "request": "launch",
+            "module": "scripts.dashboard_org_unit_edit",
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "Event editing",
+            "type": "python",
+            "request": "launch",
+            "module": "scripts.edit_event",
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "Tei report",
+            "type": "python",
+            "request": "launch",
+            "module": "scripts.tei_report",
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal"
+        },
+    ]
+}
