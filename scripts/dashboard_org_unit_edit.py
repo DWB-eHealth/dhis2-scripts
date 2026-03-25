@@ -1,69 +1,70 @@
+import random
+import string
 from dhis.api import api_get, api_post
 
+def dhis2_uid():
+    letters = string.ascii_letters
+    chars = string.ascii_letters + string.digits
+    return random.choice(letters) + ''.join(random.choice(chars) for _ in range(10))
 
 def fetch_object(collection, obj_id):
-    return api_get(f"{collection}/{obj_id}.json")
+    return api_get(
+        f"{collection}/{obj_id}.json?fields=*,!access,!user,!userGroupAccesses,!userAccesses,!favorites,!href,!lastUpdatedBy,!createdBy"
+    )
 
 def orgunit_exists(ou_id):
     data = api_get(f"organisationUnits/{ou_id}.json?fields=id")
     return data is not None and "id" in data
 
 def clone_object_with_new_ou(obj, new_ou_id):
-    cloned = {k: v for k, v in obj.items() if k != "id"}
+    cloned = {}
+    for k, v in obj.items():
+        if k not in [
+            "id", "uid", "created", "lastUpdated", "href",
+            "lastUpdatedBy", "createdBy", "access",
+            "user", "userGroupAccesses", "userAccesses", "favorites"
+        ]:
+            cloned[k] = v
+
+    new_id = dhis2_uid()
+    cloned["id"] = new_id
+    cloned["uid"] = new_id
     cloned["organisationUnits"] = [{"id": new_ou_id}]
     return cloned
 
-def find_new_object_id(collection, original_obj, new_ou_id):
-    name = original_obj.get("name", "")
-    results = api_get(
-        f"{collection}.json?fields=id,name,organisationUnits[id]&filter=name:eq:{name}&paging=false"
-    )
-    if not results or collection not in results:
+def import_object(collection, cloned):
+    try:
+        response = api_post("metadata", {collection: [cloned]})
+        return response
+    except Exception as e:
+        print(f"Error importing {collection[:-1]} {cloned.get('name', '')}: {e}")
         return None
-    for o in results[collection]:
-        ous = o.get("organisationUnits", [])
-        ou_ids = {ou["id"] for ou in ous}
-        if ou_ids == {new_ou_id}:
-            return o["id"]
-    return None
 
-def replace_item_in_dashboard(dashboard_id, item_type, old_id, new_id):
+def replace_item_in_dashboard(dashboard_id, old_id, new_id):
+    # Fetch full dashboard items to ensure we have the correct structure for update
     dashboard = api_get(
-        f"""dashboards/{dashboard_id}.json?fields=
-        id,
-        name,
-        dashboardItems[
-            id,
-            x,
-            y,
-            width,
-            height,
-            eventChart[id],
-            eventReport[id],
-            map[id],
-            chart[id],
-            reportTable[id]
-        ]"""
+        f"dashboards/{dashboard_id}.json?fields=id,name,dashboardItems[*]"
     )
-
     if dashboard is None:
+        print("Could not load dashboard for replacement")
         return
 
     for item in dashboard.get("dashboardItems", []):
-        if item_type in item and item[item_type] and item[item_type]["id"] == old_id:
-            item[item_type]["id"] = new_id
+        # Update only the changed item
+        if item.get("visualization", {}).get("id") == old_id:
+            item["visualization"]["id"] = new_id
 
-    metadata = {
-        "dashboards": [
-            {
-                "id": dashboard["id"],
-                "name": dashboard["name"],
-                "dashboardItems": dashboard["dashboardItems"]
-            }
-        ]
-    }
+        if item.get("map", {}).get("id") == old_id:
+            item["map"]["id"] = new_id
 
-    api_post("metadata", metadata)
+    # Post full dashboard back
+    api_post("metadata", {
+        "dashboards": [{
+            "id": dashboard["id"],
+            "name": dashboard["name"],
+            "dashboardItems": dashboard["dashboardItems"]
+        }]
+    })
 
 def main():
     dashboard_id = input("Dashboard ID: ").strip()
@@ -71,23 +72,31 @@ def main():
         return
 
     dashboard = api_get(
-        f"dashboards/{dashboard_id}.json?fields=id,name,dashboardItems[id,eventChart[id,name],eventReport[id,name],map[id,name],chart[id,name],reportTable[id,name]]"
+        f"dashboards/{dashboard_id}.json?fields=id,name,dashboardItems[id,type,name,visualization[id,name],map[id,name]]"
     )
     if dashboard is None:
+        print("Dashboard not found")
         return
 
     items = []
     for item in dashboard.get("dashboardItems", []):
-        for t in ["eventChart", "eventReport", "map", "chart", "reportTable"]:
-            if t in item and item[t]:
-                items.append({
-                    "type": t,
-                    "collection": t + "s",
-                    "id": item[t]["id"],
-                    "name": item[t].get("name", "")
-                })
+        if item.get("type") == "VISUALIZATION" and item.get("visualization"):
+            items.append({
+                "type": "visualization",
+                "collection": "visualizations",
+                "id": item["visualization"]["id"],
+                "name": item["visualization"].get("name", "")
+            })
+        if item.get("type") == "MAP" and item.get("map"):
+            items.append({
+                "type": "map",
+                "collection": "maps",
+                "id": item["map"]["id"],
+                "name": item["map"].get("name", "")
+            })
 
     if not items:
+        print("No items found in dashboard")
         return
 
     for idx, it in enumerate(items, start=1):
@@ -109,25 +118,31 @@ def main():
         return
 
     for selected in selected_items:
-        obj_type = selected["type"]
         collection = selected["collection"]
         old_id = selected["id"]
 
+        print(f"\n➡ Processing {selected['name']} ({old_id})")
+
         full_obj = fetch_object(collection, old_id)
         if not full_obj:
+            print("Could not fetch object, skipping")
+            continue
+
+        if "program" in full_obj or "programStage" in full_obj:
+            print(f"Skipping program-based visualization/map: {full_obj.get('name', '')}")
             continue
 
         cloned = clone_object_with_new_ou(full_obj, new_ou_id)
-        api_post("metadata", {collection: [cloned]})
 
-        new_id = find_new_object_id(collection, full_obj, new_ou_id)
-        if not new_id:
+        response = import_object(collection, cloned)
+        if response is None:
+            print("Import failed, skipping replacement")
             continue
 
-        replace_item_in_dashboard(dashboard_id, obj_type, old_id, new_id)
+        replace_item_in_dashboard(dashboard_id, old_id, cloned["id"])
+        print(f"Updated dashboard item {old_id} → {cloned['id']}")
 
-    print("Done.")
-
+    print("\nDone.")
 
 if __name__ == "__main__":
     main()
