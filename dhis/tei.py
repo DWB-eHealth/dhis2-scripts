@@ -3,40 +3,46 @@ from dhis.api import api_get
 from dhis.utils import parse_date, compare_dates
 from dhis.config import CASE_NUMBER_COLUMN_ID
 
-# Fetching traked entity instance using the API
+
+# Fetching tracked entity instances using the Tracker API
 def fetch_full_teis(program_id, org_unit, start_date, end_date):
     query = {
         "program": program_id,
-        "orgUnit": org_unit,
+        "ou": org_unit,
         "ouMode": "DESCENDANTS",
         "fields": (
-            "trackedEntity,trackedEntityType,orgUnit,"
+            "trackedEnt ity,trackedEntityType,orgUnit,"
             "attributes[attribute,value,displayName],"
-            "enrollments[enrollment,program,orgUnit,enrollmentDate,"
-            "events[event,eventDate,dataValues[dataElement,value]]]"
+            "enrollments[enrollment,program,orgUnit,enrolledAt,"
+            "events[event,occurredAt,dataValues[dataElement,value]]]"
         ),
-        "enrollmentOccurredAfter": start_date,
-        "enrollmentOccurredBefore": end_date,
-        "pageSize": "10000",
-        "totalPages": "false",
+        "enrolledAfter": start_date,
+        "enrolledBefore": end_date,
+        "pageSize": 200,
+        "totalPages": False,
     }
 
-    res = api_get(f"tracker/trackedEntities?{urlencode(query)}")
-    # In the new tracker API, TEIs are usually under "instances"
-    return res.get("instances", [])
+    url = f"tracker/trackedEntities?{urlencode(query)}"
+    res = api_get(url) or {}
+
+    return res.get("trackedEntities", [])
+
 
 # Data element metadata
 def fetch_dataelement_info(de_id):
-    meta = api_get(f"dataElements/{de_id}?fields=id,displayName,optionSet[id]")
+    meta = api_get(f"dataElements/{de_id}?fields=id,displayName,optionSet[id]") or {}
     return meta.get("displayName", de_id), meta.get("optionSet", {}).get("id")
+
 
 def fetch_options_for_optionset(optionset_id):
     query = urlencode({
         "fields": "id,code,name",
         "filter": f"optionSet.id:eq:{optionset_id}",
+        "paging": "false",
     })
-    res = api_get(f"options?{query}")
+    res = api_get(f"options?{query}") or {}
     return {opt["id"]: opt["name"] for opt in res.get("options", [])}
+
 
 # Organisation unit fetching
 def fetch_org_units_display_names(org_unit_ids):
@@ -49,12 +55,13 @@ def fetch_org_units_display_names(org_unit_ids):
         "paging": "false",
     })
 
-    res = api_get(f"organisationUnits.json?{query}")
+    res = api_get(f"organisationUnits?{query}") or {}
 
     return {
         ou["id"]: ou["displayName"]
         for ou in res.get("organisationUnits", [])
     }
+
 
 # Extracting data element values
 def extract_de_values(tei, column_ids):
@@ -71,6 +78,7 @@ def extract_de_values(tei, column_ids):
 
     return values
 
+
 # Fetching each case number value
 def fetch_case_number(tei):
     for attr in tei.get("attributes", []):
@@ -80,12 +88,14 @@ def fetch_case_number(tei):
                 return value
     return None
 
+
 def fetch_case_number_display_name(teis):
     for tei in teis:
         for attr in tei.get("attributes", []):
             if attr.get("attribute") == CASE_NUMBER_COLUMN_ID:
                 return attr.get("displayName", "Case Number")
     return "Case Number"
+
 
 # Builder
 def build_tei(program_id, org_unit, start_date, end_date, column_ids):
@@ -116,7 +126,6 @@ def build_tei(program_id, org_unit, start_date, end_date, column_ids):
     rows = []
 
     for tei in teis:
-        # New tracker TEI identifier field
         tei_id = tei["trackedEntity"]
 
         case_number = fetch_case_number(tei)
@@ -125,7 +134,7 @@ def build_tei(program_id, org_unit, start_date, end_date, column_ids):
 
         values = extract_de_values(tei, column_ids)
 
-        # Safe filtering (does NOT break case numbers)
+        # Keep your original safe filtering
         if case_number is None and not any(values.values()):
             continue
 
@@ -138,6 +147,7 @@ def build_tei(program_id, org_unit, start_date, end_date, column_ids):
                 resolved.append(option_sets[cid].get(raw, raw))
             else:
                 resolved.append(raw)
+
         admission = None
         discharge = None
         if len(column_ids) >= 1:
