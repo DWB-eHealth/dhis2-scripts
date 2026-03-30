@@ -29,8 +29,8 @@
 ## Clone dashboard
 Cloning a dashboard can only be done by creating an empty one. This gives an ID to be used by the script.
 Once a destination ID available, every element from the source dashboard would be copied.<br>
-**! If the destination dashboard is not empty, its content will be replaced !**<br>
-A **json** file is created to show the cloned dashboard's elements.
+If the destination dashboard is not empty, a message will be displayed to either cancel the operation, or add the items from the source dahsboard at the bottom of the destination one.<br>
+A **json** file for the cloned dashboard is created as a result of this operation.
 
 ### Required inputs
 -    Source dashboard ID (dashboard to clone)
@@ -41,10 +41,12 @@ A **json** file is created to show the cloned dashboard's elements.
 This script intends to change the organisation unit of one or multiple elements within a dashboard. 
 Each item has a number attributed to it to enter as an input.<br>
 This will create new duplicated items with a different organisation unit in the destination dashboard.
+The title for the selected set of items can be changed based on a list of the three most common titles available. Those could be modified to match the newly entered organisation unit.
 
 ### Required inputs
 -    Dashboard ID
--    Element on which the organisation unit will be changed (one, multiple, or all)
+-    Items on which the organisation unit will be changed (one, multiple, or all)
+-    New item title changes (not required)
 -    New organisation unit
 
 ## Edit event
