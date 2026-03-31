@@ -37,9 +37,6 @@ def is_dashboard_empty(dashboard):
 
 
 def get_bottom_y(dashboard_items):
-    """
-    Determine the bottom-most Y coordinate of existing items.
-    """
     bottom = 0
     for item in dashboard_items:
         y = item.get("y", 0)
@@ -49,9 +46,6 @@ def get_bottom_y(dashboard_items):
 
 
 def shift_items_down(items, offset):
-    """
-    Shift all items downward by a given Y offset.
-    """
     for item in items:
         item["y"] = item.get("y", 0) + offset
     return items
