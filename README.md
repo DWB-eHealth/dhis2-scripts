@@ -27,10 +27,11 @@
 [Tracked entity instance report](#tracked-entity-instance-report)<br>
 
 ## Clone dashboard
-Cloning a dashboard can only be done by creating an empty one. This gives an ID to be used by the script.
-Once a destination ID available, every element from the source dashboard would be copied.<br>
-If the destination dashboard is not empty, a message will be displayed to either cancel the operation, or add the items from the source dahsboard at the bottom of the destination one.<br>
-A **json** file for the cloned dashboard is created as a result of this operation.
+Cloning a dashboard requires two login credentials.<br>
+Once the identifies for each dashboard are entered, the content of the first one will be copied and transferred to the second. If the destination dashboard is not empty, a message will appear offering you the option to cancel the operation or add the elements from the source dashboard to the bottom of the destination dashboard.<br>
+If the destination dashboard is empty, it will be structured in the same way as the source dashboard, including the position and size of the elements.<br>
+A **JSON** file for the cloned dashboard is created after this operation.<br>
+**! Some types of elements cannot be copied in their entirety, including informational items.**
 
 ### Required inputs
 -    Source dashboard ID (dashboard to clone)
@@ -38,10 +39,10 @@ A **json** file for the cloned dashboard is created as a result of this operatio
 
 
 ## Dashboard org unit edit
-This script intends to change the organisation unit of one or multiple elements within a dashboard. 
-Each item has a number attributed to it to enter as an input.<br>
-This will create new duplicated items with a different organisation unit in the destination dashboard.
-The title for the selected set of items can be changed based on a list of the three most common titles available. Those could be modified to match the newly entered organisation unit.
+This script allows you to modify the organization units of the elements displayed on a dashboard. <br>
+Each item is associated with a numbered list. Once selected by the user, the elements will be duplicated, and their copies will receive the identifier of the entered organizational unit. The position and size of each element remain unchanged.<br>
+The title of the selected set of elements can be modified from a list of the three most common titles. These titles can then be adapted to the newly entered organizational unit.<br>
+After the operation is done, the new version of the dashboard will be exported as a **JSON** file.
 
 ### Required inputs
 -    Dashboard ID
@@ -72,10 +73,10 @@ This report is made to assess the programs in which the patient is admitted and 
 -    Data element ID (one or multiple)<br>
 
 ### Available status<br>
-Same admission and discharge date <span style="display:inline-block;width:100px;height:10px;background:#4caf50;border-radius:4px;"></span><br>
-Discharge date different from admission date <span style="display:inline-block;width:100px;height:10px;background:#f44336;border-radius:4px;"></span><br>
-Admission date registered after discharge date <span style="display:inline-block;width:100px;height:10px;background:#ff9800;border-radius:4px;"></span><br>
-Missing data <span style="display:inline-block;width:100px;height:10px;background:#9e9e9e;border-radius:4px;"></span><br>
+Same admission and discharge date <svg width="100" height="12"><rect width="100" height="12" fill="#4caf50" rx="4"/></svg><br>
+Discharge date different from admission date <svg width="100" height="12"><rect width="100" height="12" fill="#f44336" rx="4"/></svg><br>
+Admission date registered after discharge date <svg width="100" height="12"><rect width="100" height="12" fill="#ff9800" rx="4"/></svg><br>
+Missing data <svg width="100" height="12"><rect width="100" height="12" fill="#9e9e9e" rx="4"/></svg>
 
 
 The report is provided with required columns, including
