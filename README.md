@@ -1,3 +1,15 @@
+## Configuration
+Python : version **3.14**<br>
+Install registered requirements using **pip install -r requirements.txt**<br>
+Rename the **.env.example** file, **.env**<br>
+
+### Env file<br>
+DHIS2_BASE_URL="http://dhis.com/api"<br>
+DHIS2_USERNAME="username"<br>
+DHIS2_PASSWORD="password"<br>
+REPORTS_DIRECTORY ="./reports"<br>
+CASE_NUMBER_COLUMN_ID =""<br>
+
 ## List of requirements
 -   blinker==1.9.0
 -   certifi==2026.1.4
@@ -73,10 +85,14 @@ This report is made to assess the programs in which the patient is admitted and 
 -    Data element ID (one or multiple)<br>
 
 ### Available status<br>
-Same admission and discharge date <svg width="100" height="12"><rect width="100" height="12" fill="#4caf50" rx="4"/></svg><br>
-Discharge date different from admission date <svg width="100" height="12"><rect width="100" height="12" fill="#f44336" rx="4"/></svg><br>
-Admission date registered after discharge date <svg width="100" height="12"><rect width="100" height="12" fill="#ff9800" rx="4"/></svg><br>
-Missing data <svg width="100" height="12"><rect width="100" height="12" fill="#9e9e9e" rx="4"/></svg>
+Same admission and discharge date <svg width="100" height="12"><rect width="100" height="12" fill="#4caf50" rx="4" /></svg>
+
+Discharge date different from admission date <svg width="100" height="12"><rect width="100" height="12" fill="#f44336" rx="4" />
+</svg>
+
+Admission date registered after discharge date <svg width="100" height="12"><rect width="100" height="12" fill="#ff9800" rx="4" /></svg>
+
+Missing data  <svg width="100" height="12"><rect width="100" height="12" fill="#9e9e9e" rx="4" /></svg>
 
 
 The report is provided with required columns, including
