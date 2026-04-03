@@ -37,75 +37,6 @@ def dhis2_uid():
     chars = string.ascii_letters + string.digits
     return random.choice(letters) + ''.join(random.choice(chars) for _ in range(10))
 
-# detect common title parts across all items and offer replacement for selected items
-def detect_and_replace_common_title_parts(all_items, selected_items):
-    # detect repeated words across ALL items
-    all_titles = [item["name"] for item in all_items]
-    word_lists = [t.replace("_", " ").replace("-", " ").split() for t in all_titles]
-
-    word_counter = Counter()
-    for words in word_lists:
-        word_counter.update(set(words))
-
-    common_words = [w for w, c in word_counter.items() if c >= 2 and len(w) > 2]
-
-    if not common_words:
-        print("\nNo common title parts detected.")
-        return selected_items
-
-    print("\nCommon title parts:")
-    for idx, w in enumerate(common_words, start=1):
-        print(f"{idx}. {w}")
-
-    choice = input(
-        "Choose word/term number(s) to replace (comma-separated), or press Enter to skip: "
-    ).strip()
-
-    if not choice:
-        return selected_items
-
-    try:
-        indices = [int(x.strip()) for x in choice.split(",") if x.strip()]
-        chosen_terms = [common_words[i - 1] for i in indices]
-    except Exception:
-        print("Invalid choice, skipping replacement.")
-        return selected_items
-
-    # ask for replacement for each chosen term
-    replacements = {}
-    for term in chosen_terms:
-        replacement = input(f"Replace '{term}' with: ").strip()
-        if replacement:
-            replacements[term] = replacement
-
-    if not replacements:
-        print("No valid replacements provided, skipping.")
-        return selected_items
-
-    changed_items = []
-
-    # apply replacements only to selected items
-    for item in selected_items:
-        original = item["name"]
-        new_name = original
-
-        for old, new in replacements.items():
-            new_name = new_name.replace(old, new)
-
-        if new_name != original:
-            item["name"] = new_name
-            changed_items.append(item)
-
-    # only show logs if something changed
-    if changed_items:
-        print("\nApplied replacements:")
-        for old, new in replacements.items():
-            print(f"  {old} → {new}")
-    else:
-        print("\nNo selected items contained the chosen terms. No changes applied.")
-
-    return selected_items
-
 # dashboard JSON export
 def export_dashboard_json(metadata):
     # ensure reports directory exists
@@ -148,44 +79,51 @@ def detect_and_replace_common_title_parts(all_items, selected_items):
     for words in word_lists:
         word_counter.update(set(words))
 
+    # common words appearing in at least 2 titles, length > 2
     common_words = [w for w, c in word_counter.items() if c >= 2 and len(w) > 2]
 
     if not common_words:
         print("\nNo common title parts detected.")
         return selected_items
 
-    print("\nDetected common title parts (across all items):")
+    # Display detected common words
+    print("\nDetected common title parts:")
     for idx, w in enumerate(common_words, start=1):
         print(f"{idx}. {w}")
 
-    choice = input(
-        "\nChoose word/term number(s) to replace (comma-separated), or press Enter to skip: "
-    ).strip()
+    chosen_terms = []
+    while True:
+        choice = input(
+            "\nChoose word/term number(s) to replace (comma-separated), "
+            "or press Enter to skip: "
+        ).strip()
+        # If the user intentionally exit
+        if not choice:
+            return selected_items
 
-    if not choice:
-        return selected_items
-
-    try:
-        indices = [int(x.strip()) for x in choice.split(",") if x.strip()]
-        chosen_terms = [common_words[i - 1] for i in indices]
-    except Exception:
-        print("Invalid choice, skipping replacement.")
-        return selected_items
-
-    # ask for replacement for each chosen term
+        try:
+            indices = [int(x.strip()) for x in choice.split(",") if x.strip()]
+            chosen_terms = [common_words[i - 1] for i in indices]
+            break
+        except Exception:
+            print("Invalid selection. Please try again.")
+            
     replacements = {}
     for term in chosen_terms:
-        replacement = input(f"Replace '{term}' with (leave empty to skip): ").strip()
-        if replacement:
-            replacements[term] = replacement
+        while True:
+            replacement = input(f"Replace '{term}' with (leave empty to skip): ").strip()
+            if replacement:
+                replacements[term] = replacement
+                break
+            else:
+                print("Replacement cannot be empty. Try again.")
 
     if not replacements:
         print("No valid replacements provided, skipping.")
         return selected_items
 
+    # Apply replacements to selected items
     changed_items = []
-
-    # apply replacements only to selected items
     for item in selected_items:
         original = item["name"]
         new_name = original
@@ -197,7 +135,7 @@ def detect_and_replace_common_title_parts(all_items, selected_items):
             item["name"] = new_name
             changed_items.append(item)
 
-    # only show logs if something changed
+    # Log changes
     if changed_items:
         print("\nApplied replacements:")
         for old, new in replacements.items():
@@ -206,6 +144,7 @@ def detect_and_replace_common_title_parts(all_items, selected_items):
         print("\nNo selected items contained the chosen terms. No changes applied.")
 
     return selected_items
+
 
 # dashboard JSON export
 def export_dashboard_json(metadata):

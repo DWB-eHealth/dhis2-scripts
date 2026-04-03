@@ -47,20 +47,24 @@ A **JSON** file for the cloned dashboard is created after this operation.<br>
 
 ### Required inputs
 -    Source dashboard ID (dashboard to clone)
--    Destination dashboard ID (dashboard receiving the copied content)
-
+-    Destination dashboard ID (dashboard receiving the duplicated structure)
 
 ## Dashboard org unit edit
-This script allows you to modify the organization units of the elements displayed on a dashboard. <br>
-Each item is associated with a numbered list. Once selected by the user, the elements will be duplicated, and their copies will receive the identifier of the entered organizational unit. The position and size of each element remain unchanged.<br>
-The title of the selected set of elements can be modified from a list of the three most common titles. These titles can then be adapted to the newly entered organizational unit.<br>
-After the operation is done, the new version of the dashboard will be exported as a **JSON** file.
+This script allows you to change the organization unit for a set of selected dashboard's items.<br>
+The selection is duplicated using a generated UID.<br>
+Each item is then listed throught outputs on the user terminal command. Once selected, the item(s) will be submitted for changes.<br>
+### Changes
+**Title** : the title of the selected item(s) can be replaced to match the new organization unit choice. The three most common titles present in the selection will be displayed for change.<br>
+**Organization units** : one or multiple organization units IDs can be entered by the user to update the selected item from the numbered list.<br>
+**Position** : the position and size of each element remain unchanged after the updates.<br><br>
+
+After the operation is done, a **JSON** file is generated in the report folder.
 
 ### Required inputs
 -    Dashboard ID
 -    Items on which the organisation unit will be changed (one, multiple, or all)
 -    New item title changes (not required)
--    New organisation unit
+-    New organisation unit (one or multiple)
 
 ## Edit event
 An event value can only be changed if the condition entered as an input is true.<br>
@@ -93,7 +97,6 @@ Discharge date different from admission date <svg width="100" height="12"><rect 
 Admission date registered after discharge date <svg width="100" height="12"><rect width="100" height="12" fill="#ff9800" rx="4" /></svg>
 
 Missing data  <svg width="100" height="12"><rect width="100" height="12" fill="#9e9e9e" rx="4" /></svg>
-
 
 The report is provided with required columns, including
 -    ID

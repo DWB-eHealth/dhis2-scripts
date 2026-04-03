@@ -1,10 +1,7 @@
-from dhis.api import (
-    fetch_object, orgunit_exists, import_object,api_get
-)
-from dhis.dashboard import (
-    replace_item_in_dashboard, clone_object_with_new_ou
-)
+from dhis.api import (fetch_object, orgunit_exists, import_object, api_get)
+from dhis.dashboard import (replace_item_in_dashboard, clone_object_with_new_ou)
 from dhis.utils import detect_and_replace_common_title_parts, export_dashboard_json
+
 
 def main():
     dashboard_id = input("Enter dashboard ID to edit: ").strip()
@@ -22,7 +19,7 @@ def main():
         print("Dashboard not found")
         return
 
-    # extract items
+    # Extract items
     items = []
     for item in dashboard.get("dashboardItems", []):
         if item.get("type") == "VISUALIZATION" and item.get("visualization"):
@@ -46,72 +43,107 @@ def main():
         print("No items found in dashboard")
         return
 
-    # display items
+    # Display items once
+    print("\nDashboard items:")
     for idx, it in enumerate(items, start=1):
         print(f"{idx}. [{it['type']}] {it['name']} ({it['id']})")
 
-    choice = input("Select item by number(s) or 'all': ").strip().lower()
-    if choice == "all":
-        selected_items = items.copy()
-    else:
-        indices = [int(x.strip()) for x in choice.split(",")]
-        selected_items = [items[i - 1] for i in indices]
-
-    # title replacement step
-    selected_items = detect_and_replace_common_title_parts(items, selected_items)
-
-    new_ou_id = input("New orgUnit ID: ").strip()
-    if not new_ou_id:
-        return
-
-    if not orgunit_exists(new_ou_id):
-        print("OrgUnit does not exist.")
-        return
-
+    # Initialize metadata ONCE
     cloned_metadata = {"visualizations": [], "maps": []}
+    first_run_dashboard_listing = True
 
-    # process each selected item
-    for selected in selected_items:
-        collection = selected["collection"]
-        old_id = selected["id"]
+    # Main loop for multiple batches
+    while True:
+        if not first_run_dashboard_listing:
+            print("\n----------------------")
+            print("\nDashboard items:")
+            for idx, it in enumerate(items, start=1):
+                print(f"{idx}. [{it['type']}] {it['name']} ({it['id']})")
 
-        print(f"\nProcessing {selected['name']} ({old_id})")
+        first_run_dashboard_listing = False
 
-        full_obj = fetch_object(collection, old_id)
-        if not full_obj:
-            print("Could not fetch object, skipping")
+        choice = input("Select item number(s) or 'all' (or 'exit'): ").strip().lower()
+        if choice == "exit":
+            break
+
+        if choice == "all":
+            selected_items = items.copy()
+        else:
+            try:
+                indices = [int(x.strip()) for x in choice.split(",") if x.strip()]
+                selected_items = [items[i - 1] for i in indices]
+            except Exception:
+                print("Invalid selection")
+                continue
+
+        if not selected_items:
+            print("No items selected, skipping batch.")
             continue
 
-        # skip if orgUnit already matches
-        existing_ous = [ou["id"] for ou in full_obj.get("organisationUnits", [])]
-        if new_ou_id in existing_ous:
-            print("Skipping: item already uses this orgUnit.")
+        # Title replacement
+        selected_items = detect_and_replace_common_title_parts(items, selected_items)
+
+        # Org units
+        ou_input = input("Enter one or more orgUnit IDs (comma-separated): ").strip()
+        if not ou_input:
+            print("No org units entered, skipping batch.")
             continue
 
-        # skip program-based items
-        if "program" in full_obj or "programStage" in full_obj:
-            print(f"Skipping program-based item: {full_obj.get('name', '')}")
+        new_ou_ids = [x.strip() for x in ou_input.split(",") if x.strip()]
+        if not new_ou_ids:
+            print("No valid org units parsed, skipping batch.")
             continue
 
-        # apply updated title
-        full_obj["name"] = selected["name"]
-
-        cloned = clone_object_with_new_ou(full_obj, new_ou_id)
-
-        response = import_object(collection, cloned)
-        if response is None:
-            print("Import failed, skipping replacement")
+        invalid_ous = [ou for ou in new_ou_ids if not orgunit_exists(ou)]
+        if invalid_ous:
+            print(f"These org units do not exist: {', '.join(invalid_ous)}")
+            print("Batch skipped.")
             continue
 
-        replace_item_in_dashboard(dashboard_id, old_id, cloned["id"])
+        # Process each selected item
+        for selected in selected_items:
+            collection = selected["collection"]
+            old_id = selected["id"]
 
-        cloned_metadata[collection].append(cloned)
+            print(f"\nProcessing {selected['name']} ({old_id})")
 
-        print(f"Updated dashboard item {old_id} → {cloned['id']}")
+            full_obj = fetch_object(collection, old_id)
+            if not full_obj:
+                print("Could not fetch object, skipping")
+                continue
 
-    # export final JSON
+            if "program" in full_obj or "programStage" in full_obj:
+                print(f"Skipping program-based item: {full_obj.get('name', '')}")
+                continue
+
+            full_obj["name"] = selected["name"]
+
+            # Clone once
+            cloned = clone_object_with_new_ou(full_obj, new_ou_ids[0])
+
+            # Apply ALL org units
+            cloned["organisationUnits"] = [{"id": ou} for ou in new_ou_ids]
+
+            response = import_object(collection, cloned)
+            if response is None:
+                print("Import failed, skipping replacement")
+                continue
+
+            replace_item_in_dashboard(dashboard_id, old_id, cloned["id"])
+
+            cloned_metadata[collection].append(cloned)
+
+            print(
+                f"Updated dashboard item {old_id} → {cloned['id']} "
+                f"with organisationUnits: {new_ou_ids}"
+            )
+
+        print("\nBatch complete.")
+
+    # Export final JSON
     export_dashboard_json(cloned_metadata)
-    print("\nUpdate done.")
+    print("\nAll updates done.")
+
 
 if __name__ == "__main__":
     main()
