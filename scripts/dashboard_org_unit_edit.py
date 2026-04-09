@@ -7,11 +7,11 @@ def main():
     dashboard_id = input("Enter dashboard ID to edit: ").strip()
     if not dashboard_id:
         return
-
     dashboard = api_get(
         "dashboards/"
         f"{dashboard_id}.json?fields=id,name,"
         "dashboardItems[id,type,name,"
+        "eventReport[id,name,organisationUnits],"
         "visualization[id,name,organisationUnits],"
         "map[id,name,organisationUnits]]"
     )
@@ -22,6 +22,14 @@ def main():
     # Extract items
     items = []
     for item in dashboard.get("dashboardItems", []):
+        if item.get("type") == "EVENT_REPORT" and item.get("eventReport"):
+            items.append({
+                "type": "eventReport",
+                "collection": "eventReports",
+                "id": item["eventReport"]["id"],
+                "name": item["eventReport"].get("name", ""),
+                "ou": item["eventReport"].get("organisationUnits", [])
+            })
         if item.get("type") == "VISUALIZATION" and item.get("visualization"):
             items.append({
                 "type": "visualization",
@@ -39,9 +47,9 @@ def main():
                 "ou": item["map"].get("organisationUnits", [])
             })
 
-    if not items:
-        print("No items found in dashboard")
-        return
+        if not items:
+            print("No items found in dashboard")
+            return
 
     # Display items once
     print("\nDashboard items:")
@@ -49,7 +57,12 @@ def main():
         print(f"{idx}. [{it['type']}] {it['name']} ({it['id']})")
 
     # Initialize metadata ONCE
-    cloned_metadata = {"visualizations": [], "maps": []}
+    cloned_metadata = {
+    "visualizations": [],
+    "maps": [],
+    "eventReports": []
+    }
+
     first_run_dashboard_listing = True
 
     # Main loop for multiple batches
@@ -112,7 +125,7 @@ def main():
                 print("Could not fetch object, skipping")
                 continue
 
-            if "program" in full_obj or "programStage" in full_obj:
+            if selected["type"] != "eventReport" and ("program" in full_obj or "programStage" in full_obj):
                 print(f"Skipping program-based item: {full_obj.get('name', '')}")
                 continue
 

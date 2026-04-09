@@ -60,7 +60,6 @@ def clone_object_with_new_ou(obj, new_ou_id):
 
 # replace old item ID with new item ID in dashboard configuration
 def replace_item_in_dashboard(dashboard_id, old_id, new_id):
-    # update dashboard to point to cloned item
     dashboard = api_get(
         f"dashboards/{dashboard_id}.json?fields=id,name,dashboardItems[*]"
     )
@@ -73,6 +72,8 @@ def replace_item_in_dashboard(dashboard_id, old_id, new_id):
             item["visualization"]["id"] = new_id
         if item.get("map", {}).get("id") == old_id:
             item["map"]["id"] = new_id
+        if item.get("eventReport", {}).get("id") == old_id:
+            item["eventReport"]["id"] = new_id
 
     api_post("metadata", {
         "dashboards": [{
