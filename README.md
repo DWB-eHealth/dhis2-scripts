@@ -67,15 +67,14 @@ After the operation is done, a **JSON** file is generated in the report folder.
 -    New organisation unit (one or multiple)
 
 ## Edit event
-An event value can only be changed if the condition entered as an input is true.<br>
-As a result, an **xlsx** file will be created displaying the old and new values for the event along with its ID and the data element ID.
+Each event is linked to a set of data elements. Using the event ID, a list of data elements is displayed for selection.<br>
+Data element value can be modified one by one. A confirmation message is sent to the user before every change.<br>
+As a result, an **xlsx** file will be created displaying the old and new values for the selected event and its elements.
 
 ### Required inputs
--    Organisation unit ID
--    Data element ID
 -    Event ID
--    Condition to meet
--    New value
+-    Data element (list)
+-    New value for the selected data element
 
 ## Tracked entity instance report
 
@@ -86,7 +85,7 @@ This report is made to assess the programs in which the patient is admitted and 
 -    Organisation unit ID
 -    Date of the enrollment
 -    Date of the last registered event
--    Data element ID (one or multiple)<br>
+-    Data element ID (list)<br>
 
 ### Available status<br>
 Same admission and discharge date <svg width="100" height="12"><rect width="100" height="12" fill="#4caf50" rx="4" /></svg>
@@ -98,8 +97,9 @@ Admission date registered after discharge date <svg width="100" height="12"><rec
 
 Missing data  <svg width="100" height="12"><rect width="100" height="12" fill="#9e9e9e" rx="4" /></svg>
 
-The report is provided with required columns, including
--    ID
+
+The report is provided with already selected columns, including
+-    TEI ID
 -    Case number
 -    Organisation unit
 -    Admission and discharge result
