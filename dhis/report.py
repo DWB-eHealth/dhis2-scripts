@@ -59,7 +59,6 @@ def write_tei(data):
         ws.column_dimensions[column].width = max_length + 2
 
     wb.save(filename)
-    print(f"Report saved as: {filename}")
 
 
 # Even editing report
