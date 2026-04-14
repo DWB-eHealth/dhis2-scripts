@@ -64,8 +64,7 @@ def write_tei(data):
 
 # Even editing report
 def write_event_xlsx(event_before, event_after):
-
-    output_path = REPORTS_DIRECTORY / "event_edit_result.xlsx"
+    output_path = get_next_excel_filename("event_edit_result")
 
     wb = Workbook()
     ws = wb.active
