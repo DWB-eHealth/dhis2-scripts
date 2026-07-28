@@ -37,6 +37,9 @@ CASE_NUMBER_COLUMN_ID =""<br>
 [Dashboard_org_unit_edit](#dashboard-org-unit-edit)<br>
 [Edit event](#edit-event)<br>
 [Tracked entity instance report](#tracked-entity-instance-report)<br>
+[Change tracked entity instance organization unit](#change-tracked-entity-instance-organization-unit)<br>
+[List indicator with deprecated elements](#list-indicator-with-deprecated-elements)<br>
+[Classify indicator by group](#classify-indicator-by-group)<br>
 
 ## Clone dashboard
 Cloning a dashboard requires two login credentials.<br>
@@ -110,13 +113,13 @@ This could be used along the tracked entity instance report script to fix data e
 Using a **TEI ID** and a **Program ID** as inputs, you can select any tei to change. The change will only be allowed if the new organization unit is linked to the same program as the previous one.
 
 
-### List indicator with deprecated elements
+## List indicator with deprecated elements
 
 Every indicator is composed of both numerator and denominator. This scripts allows to generate a report of indicators that uses a selected group of data elements.<br>
 It is intended to be used with a deprecated data elements group which contains each data element categorized as not relevant.<br>
 A list of every data element group available in the instance is displayed for selection. Once selected, every indicator using the data element of this group will be added into an **xlsx file**.
 
-### Classify indicator by group 
+## Classify indicator by group 
 
 Using DHIS2 API endpoints, each indicator is listed in an **xlsx file** displaying its name, group, id and type.<br>
 Group name are created for indicators that belongs to more than one group.
