@@ -103,3 +103,20 @@ The report is provided with already selected columns, including
 -    Case number
 -    Organisation unit
 -    Admission and discharge result
+
+## Change tracked entity instance organization unit
+
+This could be used along the tracked entity instance report script to fix data entry errors.<br>
+Using a **TEI ID** and a **Program ID**, the script allows you to enter a new orgnization unit id for any tei. If the new organization unit is linked to the same program, the change will be made.
+
+
+### List indicator with deprecated elements
+
+Every indicator is composed of both numerator and denominator. This scripts allows to generate a report of indicators that uses a selected group of data elements.<br>
+It is intended to be used with a deprecated data elements group which contains each data element categorized as not relevant.<br>
+A list of every data element group available in the instance is displayed for selection. Once selected, every indicator using the data element of this group will be added into an **xlsx file**.
+
+### Classify indicator by group 
+
+Using DHIS2 API endpoints, each indicator is listed in an **xlsx file** displaying its name, group, id and type.<br>
+Group name are created for indicators that belongs to more than one group.

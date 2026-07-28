@@ -110,3 +110,99 @@ def write_dashboard_json(metadata, prefix="dashboard_clone"):
         json.dump(metadata, f, indent=2)
 
     print(f"Dashboard clone preview saved to: {output_path}")
+
+
+
+#Indicator group report
+def get_next_indicator_group_filename(base: str = "indicator_group") -> Path:
+    i = 1
+    while True:
+        filename = REPORTS_DIRECTORY / f"{base}_{i}.xlsx"
+        if not filename.exists():
+            return filename
+        i += 1
+
+
+def write_indicator_group_excel(rows):
+    filename = get_next_indicator_group_filename()
+
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Indicators by group"
+
+    headers = ["Indicator group", "Indicator type", "Name", "ID", "Code"]
+    ws.append(headers)
+
+    # Header
+    for cell in ws[1]:
+        cell.font = Font(bold=True)
+    # Rows
+    for r in rows:
+        ws.append([
+            r.get("indicator_group", ""),
+            r.get("indicator_type", ""),
+            r.get("name", ""),
+            r.get("id", ""),
+            r.get("code", ""),
+        ])
+
+    # Auto-adjust column width
+    for col in ws.columns:
+        max_length = 0
+        column = col[0].column_letter
+        for cell in col:
+            if cell.value:
+                max_length = max(max_length, len(str(cell.value)))
+        ws.column_dimensions[column].width = max_length + 2
+
+    wb.save(filename)
+    print(f"Indicator group report saved to: {filename}")
+    return filename
+
+
+# Indicator deprecated data element group report
+def get_next_indicator_deprecated_deg_filename(base: str = "indicators_deprecated_deg") -> Path:
+    i = 1
+    while True:
+        filename = REPORTS_DIRECTORY / f"{base}_{i}.xlsx"
+        if not filename.exists():
+            return filename
+        i += 1
+
+
+def write_indicator_deprecated_deg_excel(rows):
+    filename = get_next_indicator_deprecated_deg_filename()
+
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Indicators deprecated DEG"
+
+    headers = ["Group", "Indicator name", "Indicator code", "Numerator", "Denominator"]
+    ws.append(headers)
+
+    # Bold header
+    for cell in ws[1]:
+        cell.font = Font(bold=True)
+
+    # Write rows
+    for r in rows:
+        ws.append([
+            r.get("group_name", ""),
+            r.get("name", ""),
+            r.get("code", ""),
+            r.get("numerator", ""),
+            r.get("denominator", ""),
+        ])
+
+    # Auto-adjust column width
+    for col in ws.columns:
+        max_length = 0
+        column = col[0].column_letter
+        for cell in col:
+            if cell.value:
+                max_length = max(max_length, len(str(cell.value)))
+        ws.column_dimensions[column].width = max_length + 2
+
+    wb.save(filename)
+    print(f"Indicators deprecated DEG report saved to: {filename}")
+    return filename

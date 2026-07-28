@@ -41,5 +41,30 @@
             "cwd": "${workspaceFolder}",
             "console": "integratedTerminal"
         },
+                {
+            "name": "Change tei organization unit",
+            "type": "python",
+            "request": "launch",
+            "module": "scripts.change_tei_org_unit",
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "List of indicators with deprecated data element",
+            "type": "python",
+            "request": "launch",
+            "module": "scripts.list_indicators_with_depcrecated_de",
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "Classify indicators by group",
+            "type": "python",
+            "request": "launch",
+            "module": "scripts.classify_indicators_by_group",
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal"
+        }
+
     ]
 }
