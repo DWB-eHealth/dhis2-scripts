@@ -107,7 +107,7 @@ The report is provided with already selected columns, including
 ## Change tracked entity instance organization unit
 
 This could be used along the tracked entity instance report script to fix data entry errors.<br>
-Using a **TEI ID** and a **Program ID**, the script allows you to enter a new orgnization unit id for any tei. If the new organization unit is linked to the same program, the change will be made.
+Using a **TEI ID** and a **Program ID** as inputs, you can select any tei to change. The change will only be allowed if the new organization unit is linked to the same program as the previous one.
 
 
 ### List indicator with deprecated elements
